@@ -1,0 +1,132 @@
+<html>
+<head>
+    <title>My To-Do App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0e7db;
+        }
+        .task-form, .output-section, .completed-section {
+            background-color: #fff1e6;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #555;
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-lg mx-auto">
+        <h1 class="text-4xl font-bold text-center m-4"> My To-Do Reminder</h1>
+        <form class="task-form">
+            <div class="mb-4">
+                <label for="description" class="block text-xl mb-2">Task Description</label>
+                <input type="text" id="description" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label for="date" class="block text-xl mb-2">Due Date and time</label>
+                <input type="date" id="date" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <div class="mb-4">
+                <label for="frequency" class="block text-xl mb-2">Reminder notification time</label>
+                <input type="time" id="frequency" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <button type="button" class="w-full py-2 px-4 bg-blue-600 text-white font-bold rounded" onclick="addTask()">Let's Get This Done! 🚀</button>
+        </form>
+
+        <div class="output-section" id="output">
+            <h2 class="text-2xl font-bold mb-2">Active Tasks</h2>
+            <ul id="taskList" class="list-disc pl-5"></ul>
+        </div>
+
+        <div class="completed-section" id="completed">
+            <h2 class="text-2xl font-bold mb-2">Completed Tasks</h2>
+            <ul id="completedTaskList" class="list-disc pl-5"></ul>
+        </div>
+
+        <div class="footer">
+            <a href="https://deeptoolbox.io" target="_blank">Made with ❤️</a>by Farhat Bhat
+        </div>
+    </div>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || [];
+
+        function addTask() {
+            const description = document.getElementById('description').value;
+            const date = document.getElementById('date').value;
+            const frequency = document.getElementById('frequency').value;
+
+            const task = {
+                id: Date.now(),
+                description,
+                date,
+                frequency,
+                completed: false
+            };
+
+            tasks.push(task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            setNotification(task);
+            displayTasks();
+            document.querySelector('form').reset();
+        }
+
+        function setNotification(task) {
+            setTimeout(() => {
+                if (!task.completed) {
+                    alert(`Reminder: Complete the task "${task.description}"`);
+                }
+            }, task.frequency * 60000);
+        }
+
+        function displayTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                if (!task.completed) {
+                    const li = document.createElement('li');
+                    li.appendChild(document.createTextNode(task.description));
+                    const markCompletedBtn = document.createElement('button');
+                    markCompletedBtn.innerText = 'Mark as Completed';
+                    markCompletedBtn.className = 'ml-4 px-3 py-1 bg-green-500 text-white rounded';
+                    markCompletedBtn.onclick = () => markAsCompleted(task.id);
+                    li.appendChild(markCompletedBtn);
+                    taskList.appendChild(li);
+                }
+            });
+
+            const completedTaskList = document.getElementById('completedTaskList');
+            completedTaskList.innerHTML = '';
+            completedTasks.forEach(task => {
+                const li = document.createElement('li');
+                li.appendChild(document.createTextNode(task.description));
+                completedTaskList.appendChild(li);
+            });
+        }
+
+        function markAsCompleted(taskId) {
+            const taskIndex = tasks.findIndex(task => task.id === taskId);
+            if (taskIndex > -1) {
+                const task = tasks[taskIndex];
+                task.completed = true;
+                completedTasks.push(task);
+                tasks.splice(taskIndex, 1);
+
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+                displayTasks();
+            }
+        }
+
+        window.onload = displayTasks;
+    </script>
+</body>
+</html>
